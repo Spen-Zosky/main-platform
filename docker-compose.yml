@@ -5,9 +5,11 @@ services:
     restart: unless-stopped
     command:
       - "--api.insecure=true"
+      - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      - "--log.level=INFO"
     ports:
       - "80:80"
       - "8080:8080"
@@ -15,6 +17,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - web
+    labels:
+      - "traefik.enable=true"
 
   db:
     image: postgres:16-alpine
@@ -60,8 +64,8 @@ services:
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET}
     networks:
-      - web
       - internal
+      - web
     depends_on:
       db:
         condition: service_healthy
@@ -69,10 +73,10 @@ services:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`${PUBLIC_IP}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.rule=Host(`79.72.47.188`) && PathPrefix(`/api`)"
       - "traefik.http.services.backend.loadbalancer.server.port=3000"
-      - "traefik.http.middlewares.backend-stripprefix.stripprefix.prefixes=/api"
-      - "traefik.http.routers.backend.middlewares=backend-stripprefix"
+      - "traefik.http.middlewares.strip-api.stripprefix.prefixes=/api"
+      - "traefik.http.routers.backend.middlewares=strip-api"
 
   frontend:
     build: ./frontend
@@ -82,7 +86,7 @@ services:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`${PUBLIC_IP}`)"
+      - "traefik.http.routers.frontend.rule=Host(`79.72.47.188`)"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
       - "traefik.http.routers.frontend.priority=1"
 
@@ -90,37 +94,33 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus
     restart: unless-stopped
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     networks:
       - internal
-    ports:
-      - "9090:9090"
 
   grafana:
     image: grafana/grafana-oss:latest
     container_name: grafana
     restart: unless-stopped
+    ports:
+      - "3000:3000"
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASS}
-      GF_INSTALL_PLUGINS: 
     volumes:
       - grafana_data:/var/lib/grafana
     networks:
       - internal
-    ports:
-      - "3000:3000"
 
 networks:
   web:
-    external: false
+    driver: bridge
   internal:
-    external: false
+    driver: bridge
 
 volumes:
   postgres_data:

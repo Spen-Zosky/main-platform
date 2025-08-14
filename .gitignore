@@ -1,15 +1,48 @@
-node_modules/
-dist/
+# Environment
 .env
+.env.local
 config.env
 credentials.txt
+*.key
+*.pem
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist/
+build/
 *.log
+
+# Docker
+.docker/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 .DS_Store
+
+# Traefik
 traefik/acme.json
+traefik/traefik.yml
+
+# Backups
 backups/
 *.sql
+*.sql.gz
+*.rdb
 *.dump
+
+# Docker volumes
 postgres_data/
 redis_data/
 prometheus_data/
 grafana_data/
+
+# Temp files
+tmp/
+temp/
