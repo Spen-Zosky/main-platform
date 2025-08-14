@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+config.env
+credentials.txt
+*.log
+.DS_Store
+traefik/acme.json
+backups/
+*.sql
+*.dump
+postgres_data/
+redis_data/
+prometheus_data/
+grafana_data/

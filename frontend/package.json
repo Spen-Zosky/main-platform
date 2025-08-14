@@ -1,0 +1,8 @@
+{
+  "name": "main-platform-frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Build script placeholder'",
+    "serve": "nginx -g 'daemon off;'"
+  }
+}
